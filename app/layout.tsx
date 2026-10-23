@@ -1,0 +1,3 @@
+import './globals.css';import Link from 'next/link';
+export const metadata={title:'Sistema en Vivo',description:'Participación y proyección en eventos'};
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="es"><body><nav className="nav"><Link href="/"><strong>● Sistema en Vivo</strong></Link><Link href="/dashboard">Organizador</Link><Link href="/dashboard/eventos">Eventos</Link><Link href="/login">Acceso</Link></nav>{children}</body></html>}
