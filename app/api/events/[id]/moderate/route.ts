@@ -11,8 +11,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
   const db = await userClient();
   const { data: event } = await db.from('events').select('id,organization_id').eq('id', id).maybeSingle();
-  if (!event) return NextResponse.json({ error: 'Evento no encontrado' }, { status: 404 });
-  const { data: org } = await db.from('organizations').select('id').eq('id', event.organization_id).eq('created_by', user.id).maybeSingle();
+  if (!event) {
+    const { data: moderator } = await db.from('event_moderators').select('user_id').eq('event_id', id).eq('user_id', user.id).maybeSingle();
+    if (!moderator) return NextResponse.json({ error: 'Evento no encontrado' }, { status: 404 });
+  }
+  const { data: org } = event ? await db.from('organizations').select('id').eq('id', event.organization_id).eq('created_by', user.id).maybeSingle() : { data: null };
   if (!org) {
     const { data: moderator } = await db.from('event_moderators').select('user_id').eq('event_id', id).eq('user_id', user.id).maybeSingle();
     if (!moderator) return NextResponse.json({ error: 'No autorizado para moderar este evento' }, { status: 403 });
