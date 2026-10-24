@@ -31,7 +31,15 @@ export default function Login() {
       if (error) {
         setMessage('Usuario o contraseña incorrectos.');
       } else {
-        router.replace('/dashboard');
+        const db = browser();
+        const { data: auth } = await db.auth.getUser();
+        const uid = auth.user?.id;
+        if (!uid) { setMessage('No se pudo verificar la sesión. Intentá nuevamente.'); return; }
+        const { data: assignments, error: assignmentsError } = await db.from('event_moderators').select('event_id').eq('user_id', uid).limit(1);
+        if (assignmentsError) { setMessage('No se pudieron verificar tus permisos. Intentá nuevamente.'); return; }
+        const { data: owned } = await db.from('organizations').select('id').eq('created_by', uid).limit(1);
+        const destination = owned?.length ? '/dashboard' : assignments?.length ? `/moderar/${assignments[0].event_id}` : '/mis-eventos';
+        router.replace(destination);
         router.refresh();
       }
     } catch {
