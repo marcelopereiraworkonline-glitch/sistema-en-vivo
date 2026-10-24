@@ -4,31 +4,27 @@ import { useEffect, useState } from 'react';
 export default function ShareEvent({ code }: { code: string }) {
   const [url, setUrl] = useState('');
   const [copied, setCopied] = useState(false);
-  useEffect(() => {
-    setUrl(`${window.location.origin}/participar/${encodeURIComponent(code)}`);
-  }, [code]);
-  const qrUrl = url
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=12&data=${encodeURIComponent(url)}`
-    : '';
+  useEffect(() => { setUrl(`${window.location.origin}/participar/${encodeURIComponent(code)}`); }, [code]);
+  const qrUrl = url ? `https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=12&data=${encodeURIComponent(url)}` : '';
+  const projectionUrl = url ? `${window.location.origin}/pantalla/${encodeURIComponent(code)}` : '';
   async function copy() {
     if (!url) return;
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-    } catch {
-      setCopied(false);
-    }
+    try { await navigator.clipboard.writeText(url); setCopied(true); }
+    catch { setCopied(false); }
   }
   return <section className="card">
     <h2>Compartir con invitados</h2>
     {url ? <>
-      <img src={qrUrl} alt="Código QR del enlace público del evento"
-        width={320} height={320} style={{ maxWidth: '100%', background: 'white', padding: 12 }} />
+      <img src={qrUrl} alt="Código QR del enlace público del evento" width={320} height={320} style={{ maxWidth: '100%', background: 'white', padding: 12 }} />
       <p><a href={url} target="_blank" rel="noopener noreferrer">{url}</a></p>
       <div className="split">
         <button type="button" className="btn" onClick={copy}>{copied ? 'Enlace copiado' : 'Copiar enlace'}</button>
         <a className="btn secondary" href={url} target="_blank" rel="noopener noreferrer">Abrir página pública</a>
       </div>
+      <hr style={{ margin: '24px 0' }} />
+      <h2>Pantalla gigante</h2>
+      <p className="muted">Mostrá los mensajes aprobados en una segunda pantalla o proyector. Se actualiza automáticamente.</p>
+      <a className="btn" href={projectionUrl} target="_blank" rel="noopener noreferrer">Abrir pantalla de proyección</a>
     </> : <p className="muted">Preparando enlace...</p>}
   </section>;
 }
