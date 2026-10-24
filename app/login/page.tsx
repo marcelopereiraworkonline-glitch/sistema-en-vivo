@@ -19,7 +19,8 @@ export default function Login() {
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage('');
-    const email = USERNAME_ALIASES[username.trim().toLowerCase()];
+    const entered = username.trim().toLowerCase();
+    const email = USERNAME_ALIASES[entered] || (entered.includes('@') ? entered : '');
     if (!email) {
       setMessage('Usuario o contraseña incorrectos.');
       return;
@@ -60,7 +61,7 @@ export default function Login() {
         </button>
         <p role="status">{message}</p>
       </form>
-      <p className="muted">El acceso es exclusivo para usuarios autorizados.</p>
+      <p className="muted">Los moderadores ingresan con su correo electrónico. <a href="/registro-moderador">Crear cuenta de moderador</a>.</p>
     </main>
   );
 }
