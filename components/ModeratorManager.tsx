@@ -21,6 +21,7 @@ export default function ModeratorManager({ eventId, members, assigned }: { event
   return <section className="card">
     <h2>Moderadores ({assigned.length}/3)</h2>
     <p className="muted">Podés asignar hasta tres usuarios que ya pertenezcan a la organización. Cada uno utiliza su propia cuenta.</p>
+    <p><a href={`/moderar/${eventId}`} target="_blank" rel="noopener noreferrer">Abrir panel de moderación (compartí este enlace con los moderadores)</a></p>
     {assigned.map(id => <div className="split" key={id} style={{ marginBottom: 12 }}>
       <span style={{ overflowWrap:'anywhere' }}>{id}</span>
       <button type="button" className="btn secondary" disabled={busy} onClick={() => act(id,'DELETE')}>Quitar</button>
