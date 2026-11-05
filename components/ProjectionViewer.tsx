@@ -13,7 +13,7 @@ function Display({item}:{item:Submission}){
  return item.kind==='image'?<img src={url} alt="Fotografía del público" style={{maxWidth:'100%',maxHeight:'70vh',objectFit:'contain'}}/>:<video src={url} autoPlay playsInline onLoadedData={e=>{void e.currentTarget.play().catch(()=>{});}} style={{maxWidth:'100%',maxHeight:'70vh',objectFit:'contain'}}/>;
 }
 export default function ProjectionViewer({eventId,name}:{eventId:string;name:string}){
- const [items,setItems]=useState<Submission[]>([]);const [index,setIndex]=useState(0);const [active,setActive]=useState(true);const [error,setError]=useState('');
+ const [items,setItems]=useState<Submission[]>([]);const [index,setIndex]=useState(0);const [active,setActive]=useState(true);const [error,setError]=useState('');const [started,setStarted]=useState(false);
  useEffect(()=>{let mounted=true;async function refresh(){
  const {data:event}=await db.from('events').select('status').eq('id',eventId).eq('status','live').maybeSingle();
  if(!mounted)return;setActive(!!event);if(!event){setItems([]);return;}
