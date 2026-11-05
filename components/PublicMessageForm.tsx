@@ -10,7 +10,7 @@ async function videoDuration(file: File): Promise<number> {
   });
 }
 export default function PublicMessageForm({eventId}:{eventId:string}){
- const [kind,setKind]=useState<Kind>('message');const [message,setMessage]=useState('');const [file,setFile]=useState<File|null>(null);const [busy,setBusy]=useState(false);const [feedback,setFeedback]=useState('');
+ const [kind,setKind]=useState<Kind>('message');const [message,setMessage]=useState('');const [file,setFile]=useState<File|null>(null);const [busy,setBusy]=useState(false);const [orientation,setOrientation]=useState<'horizontal'|'vertical'|null>(null);const [feedback,setFeedback]=useState('');
  async function send(e:React.FormEvent<HTMLFormElement>){
   e.preventDefault();if(busy)return;setBusy(true);setFeedback('');
   try{
@@ -28,7 +28,7 @@ export default function PublicMessageForm({eventId}:{eventId:string}){
     const path=`${eventId}/${crypto.randomUUID()}.${ext}`;
     const {error:uploadError}=await db.storage.from('event-media').upload(path,file,{contentType:file.type,upsert:false});if(uploadError)throw uploadError;
     const {error:insertError}=await db.from('submissions').insert({event_id:eventId,kind,media_path:path,status:'pending'});
-    if(insertError){await db.storage.from('event-media').remove([path]);throw insertError;}setFile(null);
+    if(insertError){await db.storage.from('event-media').remove([path]);throw insertError;}setFile(null);setOrientation(null);
     const input=document.getElementById('public-media') as HTMLInputElement|null;if(input)input.value='';
    }
    setFeedback('¡Recibido! Tu contenido quedó pendiente de aprobación.');
@@ -37,8 +37,8 @@ export default function PublicMessageForm({eventId}:{eventId:string}){
  }
  return <form className="card" onSubmit={send}>
   <h2>Participá en el evento</h2>
-  <div className="split">{(['message','image','video'] as Kind[]).map(k=><button key={k} type="button" className={kind===k?'btn':'btn secondary'} disabled={busy} onClick={()=>{setKind(k);setFeedback('');}}>{k==='message'?'Mensaje':k==='image'?'Foto':'Video'}</button>)}</div>
-  {kind==='message'?<><label htmlFor="public-message">Tu mensaje (máximo 200 caracteres)</label><textarea id="public-message" rows={4} maxLength={200} required value={message} onChange={e=>setMessage(e.target.value)} style={{width:'100%',padding:12}}/><p className="muted">{message.length}/200</p></>:<><label htmlFor="public-media">{kind==='image'?'Elegí una foto (máximo 10 MB)':'Elegí un video (máximo 10 segundos, 25 MB)'}</label><input id="public-media" type="file" required accept={kind==='image'?'image/jpeg,image/png,image/webp':'video/mp4,video/webm'} onChange={e=>setFile(e.target.files?.[0]||null)}/></>}
+  <div className="split">{(['message','image','video'] as Kind[]).map(k=><button key={k} type="button" className={kind===k?'btn':'btn secondary'} disabled={busy} onClick={()=>{setKind(k);setFile(null);setOrientation(null);setFeedback('');}}>{k==='message'?'Mensaje':k==='image'?'Foto':'Video'}</button>)}</div>
+  {kind==='message'?<><label htmlFor="public-message">Tu mensaje (máximo 200 caracteres)</label><textarea id="public-message" rows={4} maxLength={200} required value={message} onChange={e=>setMessage(e.target.value)} style={{width:'100%',padding:12}}/><p className="muted">{message.length}/200</p></>:<><label htmlFor="public-media">{kind==='image'?'Elegí una foto (máximo 10 MB)':'Elegí un video (máximo 10 segundos, 25 MB)'}</label>{kind==='video'&&<p className="muted" style={{padding:'12px 14px',border:'1px solid #64748b',borderRadius:10}}>📱 <strong>Recomendación:</strong> grabá el video con el celular en posición horizontal (acostado), preferentemente en formato 16:9. Así se verá mejor en la pantalla gigante. Duración máxima: 10 segundos.</p>}<input id="public-media" type="file" required accept={kind==='image'?'image/jpeg,image/png,image/webp':'video/mp4,video/webm'} onChange={async e=>{const chosen=e.target.files?.[0]||null;setFile(chosen);setOrientation(null);if(kind==='video'&&chosen){const url=URL.createObjectURL(chosen);const v=document.createElement('video');v.preload='metadata';v.onloadedmetadata=()=>{setOrientation(v.videoWidth>=v.videoHeight?'horizontal':'vertical');URL.revokeObjectURL(url);};v.onerror=()=>URL.revokeObjectURL(url);v.src=url;}}}/></>}
   <button className="btn" type="submit" disabled={busy||(kind==='message'?!message.trim():!file)}>{busy?'Enviando...':'Enviar para aprobación'}</button>
   {feedback&&<p role="status">{feedback}</p>}
  </form>;
