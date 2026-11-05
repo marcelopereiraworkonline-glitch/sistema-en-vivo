@@ -19,7 +19,7 @@ export default async function EventQR({ params }: { params: Promise<{ id: string
     .eq('id', event.organization_id).eq('created_by', user.id).maybeSingle();
   if (!org) notFound();
   const { data: pending } = await db.from('submissions')
-    .select('id,message,status,created_at').eq('event_id', id)
+    .select('id,kind,message,media_path,status,created_at').eq('event_id', id)
     .eq('status', 'pending').order('created_at', { ascending: true }).limit(100);
   const { data: members } = await db.from('organization_members').select('user_id,role').eq('organization_id', event.organization_id);
   const { data: assigned } = await db.from('event_moderators').select('user_id').eq('event_id', id);
@@ -31,6 +31,6 @@ export default async function EventQR({ params }: { params: Promise<{ id: string
     <ShareEvent code={event.code} />
     <ModeratorManager eventId={event.id} members={members || []} assigned={(assigned || []).map(item => item.user_id)} />
     <ModerationPanel eventId={event.id} initial={pending || []} />
-    <p className="muted">Actualizá los mensajes para ver nuevas participaciones.</p>
+    <p className="muted">Actualizá el contenido para ver nuevas participaciones.</p>
   </main>;
 }
